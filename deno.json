@@ -1,0 +1,14 @@
+{
+    "fmt": {
+        "files": {
+            "include": [
+                "src/"
+            ]
+        },
+        "options": {
+            "indentWidth": 4,
+            "useTabs": true,
+            "proseWrap": "preserve"
+        }
+    }
+}
