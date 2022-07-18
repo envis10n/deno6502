@@ -6,19 +6,21 @@ function wrapping_clamp(max: number, min: number, val: number): number {
 }
 
 export interface INumeric {
-	new: (v: number) => number;
 	MIN: number;
 	MAX: number;
 	BITS: number;
 }
 
-function buildNumeric(max: number, min: number, bits: number): INumeric {
-	return {
-		new: wrapping_clamp.bind(null, max, min),
-		MIN: min,
-		MAX: max,
-		BITS: bits,
-	};
+export type NumericConstructor = (v: number) => number;
+
+export type Numeric = NumericConstructor & INumeric;
+
+function buildNumeric(max: number, min: number, bits: number): Numeric {
+	const constr = wrapping_clamp.bind(null, max, min) as Numeric;
+	constr.BITS = bits;
+	constr.MAX = max;
+	constr.MIN = min;
+	return constr;
 }
 
 export const u8 = buildNumeric(255, 0, 8);
