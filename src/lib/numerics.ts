@@ -5,6 +5,40 @@ function wrapping_clamp(max: number, min: number, val: number): number {
 	else return val;
 }
 
+export function fmt_hex(inp: number, digits = 2): string {
+	let res = inp.toString(16);
+	if (res.length < digits) {
+		res = "0".repeat(digits - res.length) + res;
+	}
+	return res;
+}
+
+export function fmt(inp: string, ...args: number[]): string {
+	const reg = /{:(\d\d)([xXb])}/;
+	let arg_ct = 0;
+	let res = inp;
+	let reg_res2 = reg.exec(res);
+	while (reg_res2 != null) {
+		const digits = Number(reg_res2[1]);
+		if (args[arg_ct] == undefined) {
+			throw `MISSING ARGS: ${inp} (${args.join(",")})`;
+		}
+		let ntmp = args[arg_ct].toString(
+			reg_res2[2].toLowerCase() == "b" ? 2 : 16,
+		);
+		if (ntmp.length < digits) {
+			ntmp = "0".repeat(digits - ntmp.length) + ntmp;
+		}
+		arg_ct += 1;
+		res = res.replace(
+			reg_res2[0],
+			reg_res2[2] == "X" ? ntmp.toUpperCase() : ntmp,
+		);
+		reg_res2 = reg.exec(res);
+	}
+	return res;
+}
+
 export interface INumeric {
 	MIN: number;
 	MAX: number;

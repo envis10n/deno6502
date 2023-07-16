@@ -17,7 +17,7 @@ function addressInRange(
 	max: number,
 	min = 0x0000,
 ): boolean {
-	return (addr <= max || addr >= min);
+	return ((addr <= max) && (addr >= min));
 }
 
 export interface IMemoryMap {
@@ -34,9 +34,11 @@ export class Bus implements IMemory {
 		});
 	}
 	public attach(start: number, end: number, mem: IMemory) {
+		const startmap = this.get_mapped_memory(start);
+		const endmap = this.get_mapped_memory(end);
 		if (
-			this.get_mapped_memory(start) != undefined ||
-			this.get_mapped_memory(end) != undefined
+			startmap != undefined ||
+			endmap != undefined
 		) {
 			throw new Error(
 				`Memory region 0x${start.toString(16)}..0x${
@@ -71,11 +73,10 @@ export class Bus implements IMemory {
 		) {
 			// PPU Access
 			const mirrored = address & 0b00100000_00000111;
-			throw new Error("PPU NYI");
+			return 0;
 		} else {
-			console.log(`Ignoring memory access at 0x${address.toString(16)}`);
+			return this.read_from(address);
 		}
-		return 0;
 	}
 	public write(addr: number, value: number): void {
 		if (addressInRange(addr, RAM_MIRRORS_END, RAM)) {
@@ -106,7 +107,7 @@ export class Bus implements IMemory {
 }
 
 export class RAMChip implements IMemory {
-	private memory: Uint8Array;
+	public memory: Uint8Array;
 	constructor(size: number) {
 		this.memory = new Uint8Array(size);
 	}

@@ -1,3 +1,6 @@
+import { fmt, u16 } from "./lib/numerics.ts";
+import { IMemory } from "./memory.ts";
+
 export const NES_TAG = new Uint8Array([0x4e, 0x45, 0x53, 0x1a]);
 export const PRG_ROM_PAGE_SIZE = 16384;
 export const CHR_ROM_PAGE_SIZE = 8192;
@@ -16,11 +19,33 @@ export enum Mirroring {
 	FOUR_SCREEN,
 }
 
-export class Rom {
+export class Rom implements IMemory {
 	public prg_rom: Uint8Array;
 	public chr_rom: Uint8Array;
 	public mapper: number;
 	public screen_mirroring: Mirroring;
+	public read(address: number): number {
+		if (address >= 0x8000) {
+			let rom_addr = address - 0x8000;
+			if (this.prg_rom.length <= 0x4000 && rom_addr >= 0x4000) {
+				rom_addr = rom_addr % 0x4000;
+			}
+			return this.prg_rom[rom_addr];
+		} else {
+			return 0;
+		}
+	}
+	public write(_address: number, _value: number): void {
+		throw new Error("Unable to write to ROM.");
+	}
+	public read_u16(address: number): number {
+		const lo = this.read(address);
+		const hi = this.read(u16(address + 1));
+		return ((hi << 8) | u16(lo));
+	}
+	public write_u16(_address: number, _value: number): void {
+		throw new Error("Unable to write to ROM.");
+	}
 	constructor(raw: Uint8Array) {
 		if (!hasNESTag(raw)) {
 			throw new Error("File is not in iNES file format.");

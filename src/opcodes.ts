@@ -8,7 +8,7 @@ enum EAddressingMode {
 	Absolute_Y,
 	Indirect_X,
 	Indirect_Y,
-	NoneAddressing,
+	Accumulator,
 }
 
 export interface OpCode {
@@ -36,8 +36,8 @@ function newOp(
 }
 
 const CPU_OP_CODES: OpCode[] = [
-	newOp(0x00, "BRK", 1, 7, EAddressingMode.NoneAddressing),
-	newOp(0xea, "NOP", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x00, "BRK", 1, 7, EAddressingMode.Accumulator),
+	newOp(0xea, "NOP", 1, 2, EAddressingMode.Accumulator),
 
 	/* Arithmetic */
 	newOp(0x69, "ADC", 2, 2, EAddressingMode.Immediate),
@@ -86,25 +86,25 @@ const CPU_OP_CODES: OpCode[] = [
 	newOp(0x11, "ORA", 2, 5, /*+1 if page crossed*/ EAddressingMode.Indirect_Y),
 
 	/* Shifts */
-	newOp(0x0a, "ASL", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x0a, "ASL", 1, 2, EAddressingMode.Accumulator),
 	newOp(0x06, "ASL", 2, 5, EAddressingMode.ZeroPage),
 	newOp(0x16, "ASL", 2, 6, EAddressingMode.ZeroPage_X),
 	newOp(0x0e, "ASL", 3, 6, EAddressingMode.Absolute),
 	newOp(0x1e, "ASL", 3, 7, EAddressingMode.Absolute_X),
 
-	newOp(0x4a, "LSR", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x4a, "LSR", 1, 2, EAddressingMode.Accumulator),
 	newOp(0x46, "LSR", 2, 5, EAddressingMode.ZeroPage),
 	newOp(0x56, "LSR", 2, 6, EAddressingMode.ZeroPage_X),
 	newOp(0x4e, "LSR", 3, 6, EAddressingMode.Absolute),
 	newOp(0x5e, "LSR", 3, 7, EAddressingMode.Absolute_X),
 
-	newOp(0x2a, "ROL", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x2a, "ROL", 1, 2, EAddressingMode.Accumulator),
 	newOp(0x26, "ROL", 2, 5, EAddressingMode.ZeroPage),
 	newOp(0x36, "ROL", 2, 6, EAddressingMode.ZeroPage_X),
 	newOp(0x2e, "ROL", 3, 6, EAddressingMode.Absolute),
 	newOp(0x3e, "ROL", 3, 7, EAddressingMode.Absolute_X),
 
-	newOp(0x6a, "ROR", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x6a, "ROR", 1, 2, EAddressingMode.Accumulator),
 	newOp(0x66, "ROR", 2, 5, EAddressingMode.ZeroPage),
 	newOp(0x76, "ROR", 2, 6, EAddressingMode.ZeroPage_X),
 	newOp(0x6e, "ROR", 3, 6, EAddressingMode.Absolute),
@@ -115,16 +115,16 @@ const CPU_OP_CODES: OpCode[] = [
 	newOp(0xee, "INC", 3, 6, EAddressingMode.Absolute),
 	newOp(0xfe, "INC", 3, 7, EAddressingMode.Absolute_X),
 
-	newOp(0xe8, "INX", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xc8, "INY", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0xe8, "INX", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xc8, "INY", 1, 2, EAddressingMode.Accumulator),
 
 	newOp(0xc6, "DEC", 2, 5, EAddressingMode.ZeroPage),
 	newOp(0xd6, "DEC", 2, 6, EAddressingMode.ZeroPage_X),
 	newOp(0xce, "DEC", 3, 6, EAddressingMode.Absolute),
 	newOp(0xde, "DEC", 3, 7, EAddressingMode.Absolute_X),
 
-	newOp(0xca, "DEX", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x88, "DEY", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0xca, "DEX", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x88, "DEY", 1, 2, EAddressingMode.Accumulator),
 
 	newOp(0xc9, "CMP", 2, 2, EAddressingMode.Immediate),
 	newOp(0xc5, "CMP", 2, 3, EAddressingMode.ZeroPage),
@@ -145,69 +145,69 @@ const CPU_OP_CODES: OpCode[] = [
 
 	/* Branching */
 
-	newOp(0x4c, "JMP", 3, 3, EAddressingMode.NoneAddressing), //AddressingMode that acts as Immidiate
-	newOp(0x6c, "JMP", 3, 5, EAddressingMode.NoneAddressing), //AddressingMode:Indirect with 6502 bug
+	newOp(0x4c, "JMP", 3, 3, EAddressingMode.Accumulator), //AddressingMode that acts as Immidiate
+	newOp(0x6c, "JMP", 3, 5, EAddressingMode.Accumulator), //AddressingMode:Indirect with 6502 bug
 
-	newOp(0x20, "JSR", 3, 6, EAddressingMode.NoneAddressing),
-	newOp(0x60, "RTS", 1, 6, EAddressingMode.NoneAddressing),
+	newOp(0x20, "JSR", 3, 6, EAddressingMode.Accumulator),
+	newOp(0x60, "RTS", 1, 6, EAddressingMode.Accumulator),
 
-	newOp(0x40, "RTI", 1, 6, EAddressingMode.NoneAddressing),
+	newOp(0x40, "RTI", 1, 6, EAddressingMode.Accumulator),
 
 	newOp(
 		0xd0,
 		"BNE",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0x70,
 		"BVS",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0x50,
 		"BVC",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0x30,
 		"BMI",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0xf0,
 		"BEQ",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0xb0,
 		"BCS",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0x90,
 		"BCC",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 	newOp(
 		0x10,
 		"BPL",
 		2,
 		2, /*(+1 if branch succeeds +2 if to a new page)*/
-		EAddressingMode.NoneAddressing,
+		EAddressingMode.Accumulator,
 	),
 
 	newOp(0x24, "BIT", 2, 3, EAddressingMode.ZeroPage),
@@ -253,26 +253,26 @@ const CPU_OP_CODES: OpCode[] = [
 
 	/* Flags clear */
 
-	newOp(0xD8, "CLD", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x58, "CLI", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xb8, "CLV", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x18, "CLC", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x38, "SEC", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x78, "SEI", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xf8, "SED", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0xD8, "CLD", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x58, "CLI", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xb8, "CLV", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x18, "CLC", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x38, "SEC", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x78, "SEI", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xf8, "SED", 1, 2, EAddressingMode.Accumulator),
 
-	newOp(0xaa, "TAX", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xa8, "TAY", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xba, "TSX", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x8a, "TXA", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x9a, "TXS", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x98, "TYA", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0xaa, "TAX", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xa8, "TAY", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xba, "TSX", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x8a, "TXA", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x9a, "TXS", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x98, "TYA", 1, 2, EAddressingMode.Accumulator),
 
 	/* Stack */
-	newOp(0x48, "PHA", 1, 3, EAddressingMode.NoneAddressing),
-	newOp(0x68, "PLA", 1, 4, EAddressingMode.NoneAddressing),
-	newOp(0x08, "PHP", 1, 3, EAddressingMode.NoneAddressing),
-	newOp(0x28, "PLP", 1, 4, EAddressingMode.NoneAddressing),
+	newOp(0x48, "PHA", 1, 3, EAddressingMode.Accumulator),
+	newOp(0x68, "PLA", 1, 4, EAddressingMode.Accumulator),
+	newOp(0x08, "PHP", 1, 3, EAddressingMode.Accumulator),
+	newOp(0x28, "PLP", 1, 4, EAddressingMode.Accumulator),
 
 	/* unofficial */
 
@@ -359,26 +359,26 @@ const CPU_OP_CODES: OpCode[] = [
 	newOp(0xe3, "*ISB", 2, 8, EAddressingMode.Indirect_X),
 	newOp(0xf3, "*ISB", 2, 8, EAddressingMode.Indirect_Y),
 
-	newOp(0x02, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x12, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x22, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x32, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x42, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x52, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x62, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x72, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x92, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xb2, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xd2, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xf2, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x02, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x12, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x22, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x32, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x42, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x52, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x62, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x72, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x92, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xb2, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xd2, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xf2, "*NOP", 1, 2, EAddressingMode.Accumulator),
 
-	newOp(0x1a, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x3a, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x5a, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0x7a, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
-	newOp(0xda, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0x1a, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x3a, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x5a, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0x7a, "*NOP", 1, 2, EAddressingMode.Accumulator),
+	newOp(0xda, "*NOP", 1, 2, EAddressingMode.Accumulator),
 	// newOp(0xea, "NOP", 1,2, EAddressingMode.NoneAddressing),
-	newOp(0xfa, "*NOP", 1, 2, EAddressingMode.NoneAddressing),
+	newOp(0xfa, "*NOP", 1, 2, EAddressingMode.Accumulator),
 
 	newOp(0xab, "*LXA", 2, 3, EAddressingMode.Immediate), //todo: highly unstable and not used
 	//http://visual6502.org/wiki/index.php?title=6502_Opcode_8B_%28XAA,_ANE%29
